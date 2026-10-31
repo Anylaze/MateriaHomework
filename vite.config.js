@@ -1,11 +1,13 @@
-import { defineConfig } from 'vite';
+ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+const repoName = process.env.GITHUB_REPOSITORY?.split('/')[1] ?? '';
+
 export default defineConfig({
+  base: process.env.GITHUB_ACTIONS ? `/${repoName}/` : '/',
   plugins: [
     VitePWA({
-      registerType: 'autoUpdate', // 自动更新 Service Worker
-      // 由 main.js 中的 virtual:pwa-register 统一注册，避免与手动注册重复
+      registerType: 'autoUpdate',
       injectRegister: 'auto',
       includeAssets: ['assets/favicon_192x.png', 'assets/favicon_512x.png'],
       manifest: {
@@ -20,29 +22,26 @@ export default defineConfig({
         display: 'standalone',
         scope: '/',
         start_url: '/',
-        "icons": [
+        icons: [
           {
-            "src": "/assets/favicon_192x.png",
-            "sizes": "192x192",
-            "type": "image/png"
+            src: '/assets/favicon_192x.png',
+            sizes: '192x192',
+            type: 'image/png'
           },
           {
-            "src": "/assets/favicon_512x.png",
-            "sizes": "512x512",
-            "type": "image/png"
+            src: '/assets/favicon_512x.png',
+            sizes: '512x512',
+            type: 'image/png'
           }
         ]
       },
       workbox: {
-        // 预缓存应用外壳：离线时 index.html / JS / CSS / 图标 / 字体都能命中缓存
         globPatterns: ['**/*.{js,css,html,ico,png,svg,txt,woff,woff2,ttf}'],
-        globIgnores: ['**/favicon_*.png'], // 图标由 includeAssets / manifest icons 单独管理
-        // 离线打开看板时回退到应用外壳（SPA 路由）
+        globIgnores: ['**/favicon_*.png'],
         navigateFallback: 'index.html',
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
-            // Google Sans webfont：CSS 与字体文件都在该域下
             urlPattern: /^https:\/\/fonts\.cdnfonts\.com\/.*/i,
             handler: 'CacheFirst',
             options: {
@@ -51,7 +50,6 @@ export default defineConfig({
                 maxEntries: 20,
                 maxAgeSeconds: 60 * 60 * 24 * 365
               },
-              // 跨域字体响应可能是不透明的（status 0），需要显式允许缓存
               cacheableResponse: {
                 statuses: [0, 200]
               }
@@ -74,9 +72,9 @@ export default defineConfig({
         ]
       },
       devOptions: {
-        enabled: true, // 开发环境下启用 Service Worker（需要 HTTPS 或 localhost）
-        type: 'module'  // 让 SW 以模块形式运行（便于调试）
+        enabled: true,
+        type: 'module'
       }
     })
   ]
-});
+}); 
