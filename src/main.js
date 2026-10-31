@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>作业看板</title>
-    <!-- Google Sans 字体（离线时由 Service Worker 缓存提供，缺失时回退到系统字体） -->
     <link href="https://fonts.cdnfonts.com/css/google-sans" rel="stylesheet">
     <link rel="icon" href="./assets/favicon_512x.png" type="image/png">
     <style>
@@ -21,19 +20,17 @@
             font-family: 'Google Sans', 'Product Sans', 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
             height: 100vh;
             width: 100vw;
-            background-color: var(--s-color-background, #fce4e4); /* 使用主题背景色，回退原色 */
+            background-color: var(--s-color-background, #fce4e4);
             background-image: url('assets/default.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
             overflow: hidden;
-            color: var(--s-color-on-background, #3E1914); /* 背景上的文字颜色 */
+            color: var(--s-color-on-background, #3E1914);
         }
 
         .loading-modal {
             position: fixed;
-            /* 用方案自己的背景色铺满，文字用 on-background，明暗两种方案下对比度都成立。
-                原来只做了 backdrop-filter 且标题写死黑色，深色模式 + 深壁纸时会看不见。 */
             background-color: var(--s-color-background, #f8f9fb);
             color: var(--s-color-on-background, #3E1914);
             top: 0px;
@@ -95,6 +92,33 @@
             cursor: pointer;
         }
 
+        .opacity-preview-btn {
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--s-color-on-surface, #3E1914);
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            padding: 8px 12px;
+            min-width: 72px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+
+        .opacity-preview-btn:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.03);
+        }
+
+        .opacity-preview-btn.active {
+            background: var(--s-color-primary, #9C4F4F);
+            color: var(--s-color-on-primary, #fff);
+            border-color: transparent;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.14);
+        }
+
         .custom-images {
             position: absolute;
             top: 20px;
@@ -107,6 +131,7 @@
             max-height: calc(100vh - 100px);
             overflow-y: hidden;
         }
+
         .custom-images div img {
             cursor: pointer;
             transition: transform 0.2s ease, opacity 0.2s ease;
@@ -128,7 +153,7 @@
             padding: 4vh 4vw;
             gap: 4vw;
             position: relative;
-            z-index: 2; /* 位于 iframe 背景层（0）与薄纱（1）之上 */
+            z-index: 2;
         }
 
         .left-panel {
@@ -138,23 +163,25 @@
             justify-content: center;
             align-items: center;
         }
+
         .clock {
             display: flex;
             flex-direction: column;
             align-items: center;
             font-weight: bold;
-            /* 直接压在壁纸上，用 JS 按实际背景算出来的颜色（见 syncWallpaperReadability） */
             color: var(--on-wallpaper-color, var(--s-color-primary, #FFA3B1));
             line-height: 0.85;
             text-shadow: 2px 4px 12px rgba(0, 0, 0, 0.08);
         }
+
         .hours, .minutes { font-size: 15vw; letter-spacing: -2px; }
+
         .date {
             margin-top: 2vh;
             font-size: 1.8vw;
             font-weight: bold;
             letter-spacing: 2px;
-            color: var(--on-wallpaper-color, var(--s-color-primary, #FFA3B1)); /* 与时钟同色 */
+            color: var(--on-wallpaper-color, var(--s-color-primary, #FFA3B1));
         }
 
         .right-panel {
@@ -165,7 +192,7 @@
         }
 
         .task-item {
-            background-color: var(--s-color-surface-variant, #FAE4E7); /* 表面变体色 */
+            background-color: var(--s-color-surface-variant, #FAE4E7);
             border-radius: calc(50px * var(--task-scale));
             padding: calc(10px * var(--task-scale)) calc(20px * var(--task-scale)) calc(10px * var(--task-scale)) calc(10px * var(--task-scale));
             display: flex;
@@ -184,7 +211,7 @@
         }
 
         .subject-tag {
-            background-color: var(--s-color-tertiary-container, #FCE0C6); /* 三级容器色 */
+            background-color: var(--s-color-tertiary-container, #FCE0C6);
             border-radius: calc(35px * var(--task-scale));
             padding: calc(12px * var(--task-scale)) calc(25px * var(--task-scale));
             display: flex;
@@ -192,7 +219,7 @@
             max-height: calc(70px * var(--task-scale));
             gap: calc(12px * var(--task-scale));
             flex-shrink: 0;
-            color: var(--s-color-on-tertiary-container, #444465); /* 与标签容器色配对 */
+            color: var(--s-color-on-tertiary-container, #444465);
             font-weight: bold;
             font-size: calc(30px * var(--task-scale));
             margin-right: calc(20px * var(--task-scale));
@@ -218,7 +245,7 @@
             min-height:0;
             outline: none;
             align-self: stretch;  
-            color: var(--s-color-on-surface-variant, #40484C); /* 卡片底色是 surface-variant，配对的是它 */
+            color: var(--s-color-on-surface-variant, #40484C);
             font-size: calc(40px * var(--task-scale));
             line-height: 1.32;
             font-weight: bold;
@@ -236,7 +263,7 @@
         .delete-btn {
             background: var(--s-color-error-container, #FFDAD6);
             border: none;
-            color: var(--s-color-on-error-container, #93000A); /* 与 error-container 配对 */
+            color: var(--s-color-on-error-container, #93000A);
             width: calc(40px * var(--task-scale));
             height: calc(40px * var(--task-scale));
             border-radius: 50%;
@@ -269,6 +296,7 @@
             flex-wrap: nowrap;
             pointer-events: none;
         }
+
         .restore-panel .restore-btn {
             pointer-events: auto;
         }
@@ -276,7 +304,7 @@
         .primary-btn {
             width: 58px;
             height: 58px;
-            background-color: var(--s-color-tertiary-container, #FCE0C6); /* 与标签背景一致 */
+            background-color: var(--s-color-tertiary-container, #FCE0C6);
             display: flex;
             border-radius:50%;
             align-items: center;
@@ -286,7 +314,7 @@
             border: 1px solid transparent;
             transition: background-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
             position: relative;
-            color: var(--s-color-on-tertiary-container, #444465); /* 与按钮底色配对 */
+            color: var(--s-color-on-tertiary-container, #444465);
         }
 
         .primary-btn .icon-svg {
@@ -322,28 +350,22 @@
             background-color: rgba(255, 0, 0, 0);
         }
 
-        /* 壁纸之上、内容之下的一层薄纱，深浅由 JS 按实际对比度决定（见
-            main.js 的 syncWallpaperReadability）：深色方案下、壁纸明显比方案背景亮时
-            才铺，壁纸本来就暗（深色压深色几乎看不出差别）或浅色方案下都不铺，
-            尽量不动用户壁纸。 */
         .scrim {
             position: fixed;
             inset: 0;
-            z-index: 1; /* 盖住 iframe 背景层（0），又在看板内容（2）之下 */
+            z-index: 1;
             pointer-events: none;
             background-color: var(--s-color-background, #f8f9fb);
             opacity: 0;
             transition: opacity 0.3s ease;
         }
 
-        /* ==================== iframe 背景层 ==================== */
         .iframe-bg-layer {
             position: fixed;
             inset: 0;
-            z-index: 0; /* 位于 body 背景图之上、看板内容之下 */
+            z-index: 0;
             overflow: hidden;
-            pointer-events: none; /* 背景不拦截鼠标/触摸操作 */
-            /* 把这块全屏 iframe 的布局与绘制隔离出来，它的重绘不会波及看板内容 */
+            pointer-events: none;
             contain: layout paint;
         }
 
@@ -359,7 +381,6 @@
             background: transparent;
         }
 
-        /* 截图导出时隐藏 iframe（html2canvas 无法绘制跨域 iframe） */
         body.capturing .iframe-bg-layer {
             visibility: hidden;
         }
@@ -400,7 +421,6 @@
             box-shadow: none !important;
         }
 
-        /* ==================== 快捷文字徽章 ==================== */
         .quick-text-bar {
             display: flex;
             flex-wrap: wrap;
@@ -413,7 +433,6 @@
             display: none;
         }
 
-        /* 覆盖 sober s-badge 默认的 8x8 小圆点，把它变成可点击的文字标签 */
         .quick-text-bar > s-badge.quick-text-badge {
             width: auto !important;
             height: auto !important;
@@ -432,7 +451,6 @@
             filter: brightness(0.94);
         }
 
-        /* s-badge 内部文字部分（part="text"）：放大成更好点的标签尺寸 */
         .quick-text-bar > s-badge.quick-text-badge::part(text) {
             height: 24px !important;
             padding: 0 10px !important;
@@ -450,14 +468,6 @@
             outline-offset: 2px;
         }
 
-        /* ==================== 重新取色过渡 ==================== */
-        /* theme-transition 只在切换主题的瞬间挂在 <html> 上，过渡结束立刻摘掉，
-            避免长期覆盖 hover / 拖拽等自身过渡。
-            这里刻意列出具体元素而不是用 *：通配符会让浏览器给整棵文档树的每个节点
-            都建一条过渡记录，还会连带过渡 box-shadow / text-shadow 这类重绘代价很高
-            的属性，在高分辨率 + 弱 GPU 的设备上掉帧很明显。只挑真正承载主题色的
-            元素，观感基本一致。
-            只列颜色相关属性，font-size / transform 不参与，避免版面跟着动。 */
         html.theme-transition s-page,
         html.theme-transition body,
         html.theme-transition .clock,
@@ -498,12 +508,10 @@
                 transition: none !important;
             }
         }
-
     </style>
 </head>
 <body>
     <s-page style="background-color: rgba(255, 0, 0, 0)">
-        <!-- 深色方案下压暗壁纸的薄纱；必须放在 s-page 内部才能继承主题变量 -->
         <div class="scrim" aria-hidden="true"></div>
         <div class="loading-modal">
             <h1>正在加载</h1>
@@ -515,7 +523,6 @@
         <input type="file" id="img-input" accept="image/*" multiple style="display:none">
 
         <div class="controls">
-            <!-- 更换背景：弹出菜单选择「本地图片」或「iframe 网页」 -->
             <s-popup-menu>
                 <button id="bg-change-btn" class="primary-btn" data-name="更换背景" slot="trigger">
                     <span class="icon-mask" style="--icon-url: url('assets/image.svg')" aria-hidden="true"></span>
@@ -530,14 +537,13 @@
                     使用 iframe 网页
                 </s-popup-menu-item>
             </s-popup-menu>
-            <!-- 显示模式：浅色 / 深色 / 跟随系统 / 跟随取色 -->
             <s-popup-menu>
                 <button id="theme-mode-btn" class="primary-btn" data-name="显示模式" slot="trigger">
                     <span class="icon-mask" style="--icon-url: url('assets/theme.svg')" aria-hidden="true"></span>
                     <s-ripple attached="true"></s-ripple>
                 </button>
                 <s-popup-menu-item id="theme-mode-color">
-                    <span class="theme-mode-label">跟随取���</span>
+                    <span class="theme-mode-label">跟随取色</span>
                 </s-popup-menu-item>
                 <s-popup-menu-item id="theme-mode-auto">
                     <span class="theme-mode-label">跟随系统</span>
@@ -575,11 +581,11 @@
         </div>
 
         <div class="opacity-slider-panel" aria-label="作业栏透明度调节">
+            <button id="homework-opacity-preview" class="opacity-preview-btn" type="button" aria-label="预览透明度效果">预览</button>
             <label class="opacity-slider-label" for="homework-opacity">透明度</label>
             <input id="homework-opacity" type="range" min="0.2" max="1" step="0.05" value="1" aria-label="作业栏透明度">
         </div>
 
-        <!-- 左上角自定义图片容器 -->
         <div class="custom-images" id="custom-images-container"></div>
 
         <div class="container">
@@ -594,17 +600,11 @@
             <div class="right-panel" id="task-list"></div>
         </div>
 
-        <!-- 右下角恢复区 -->
-        <div class="restore-panel" id="restore-panel">
-        </div>
-        <!-- 对话框 -->
+        <div class="restore-panel" id="restore-panel"></div>
 
-        <!-- 富文本编辑面板 -->
         <s-dialog id="text-edit-panel">
             <div slot="headline"> 富文本编辑器 </div>
-            <!-- 外层使用 Flex 纵向排布，内层编辑器使用纯粹的 block -->
             <div slot="text" style="width:100%; max-height: 60vh; display: flex; flex-direction: column;">
-                <!-- 工具栏 -->
                 <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; align-items: center;">
                     <s-icon-button id="bold-btn" title="加粗">
                         <s-icon src="/assets/bold.svg"></s-icon>
@@ -618,7 +618,6 @@
                     <s-icon-button id="add-image-btn" title="插入图片">
                         <s-icon src="/assets/image.svg"></s-icon>
                     </s-icon-button>
-                    <!-- 选项直接写进 HTML -->
                     <s-picker label="选择字体..." id="font-picker">
                         <s-picker-item value="">默认字体</s-picker-item>
                         <s-picker-item value="SimSun">宋体</s-picker-item>
@@ -640,7 +639,6 @@
                         <s-picker-item value="#616161">灰色</s-picker-item>
                     </s-picker>
                 </div>
-                <!-- 快捷文字徽章：点击后在光标处插入对应文字（列表见 src/richTextEditor.js 的 DEFAULT_QUICK_TEXTS） -->
                 <div class="quick-text-bar" id="quick-text-bar" role="toolbar" aria-label="快捷文字"></div>
                 <s-field style="height:250px; width:650px;">
                     <div slot="label">请输入内容</div>
@@ -651,20 +649,18 @@
             <s-button slot="action" type="text" id="text-edit-confirm">确定</s-button>
         </s-dialog>
 
-            <s-dialog id="reset-content-dialog">
-                <div slot="headline"> 提示 </div>
-                <div slot="text">将会清空所有科目的作业内容，并保留科目配置（名称/图标/排序/隐藏状态等）。是否继续？
-                </div>
-                <s-button slot="action" type="text">取消</s-button>
-                <s-button slot="action" type="text" style="color:#FF0000;" onclick="resetContent();">确定</s-button>
-            </s-dialog>
+        <s-dialog id="reset-content-dialog">
+            <div slot="headline"> 提示 </div>
+            <div slot="text">将会清空所有科目的作业内容，并保留科目配置（名称/图标/排序/隐藏状态等）。是否继续？
+            </div>
+            <s-button slot="action" type="text">取消</s-button>
+            <s-button slot="action" type="text" style="color:#FF0000;" onclick="resetContent();">确定</s-button>
+        </s-dialog>
 
-        <!-- 科目管理对话框 -->
         <s-dialog id="subject-manage-dialog" size="standard">
             <div slot="headline">科目管理</div>
             <div slot="text">
                 <div id="subject-list-container" style="display: flex; flex-direction: column; gap: 8px; max-height: 50vh; overflow-y: auto; padding: 12px 0;">
-                    <!-- 科目列表项将动态生成 -->
                 </div>
                 <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--s-color-outline, #ccc);">
                     <s-button id="add-subject-btn" type="filled" style="width: 100%;">
@@ -676,7 +672,6 @@
             <s-button slot="action" type="text" id="subject-manage-close">关闭</s-button>
         </s-dialog>
 
-        <!-- 添加科目对话框 -->
         <s-dialog id="add-subject-dialog">
             <div slot="headline">添加科目</div>
             <div slot="text" style="display: flex; flex-direction: column; gap: 12px;">
@@ -697,7 +692,6 @@
             <s-button slot="action" type="text" id="add-subject-confirm">确定</s-button>
         </s-dialog>
 
-        <!-- iframe 背景对话框 -->
         <s-dialog id="iframe-bg-dialog">
             <div slot="headline">iframe 背景</div>
             <div slot="text" style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
